@@ -8,9 +8,9 @@ int LED_GREEN_USER = 7;
 int BUTTON = 10;
 int BUTTON_RED = 2;
 int BUTTON_GREEN = 4;
-int contador = 1;
+int fase_jogo = 1;
 int LED;
-bool sortLed = false;
+bool mostrarLed = false;
 bool digitarLed = false;
 QueueList <int> listaRandom;
 QueueList <int> listaDigitada;
@@ -27,46 +27,31 @@ void setup() {
  randomSeed(analogRead(0));
 }
 
-void removerElementosRandom(){
-  while(!listaRandom.isEmpty ()){
-    Serial.print(listaRandom.pop());
-    //listaRandom.pop();
+void mostrarSequencia(int fase){
+  for(int i = 0; i < fase; i++){
+    LED = random(2);
+    if(LED == 0){
+      listaRandom.push(LED_GREEN);
+      digitalWrite(LED_GREEN, HIGH);
+      delay(500);
+      digitalWrite(LED_GREEN, LOW);
+      delay(500);
     }
-}
-void removerElementosDigitada(){
-  while(!listaDigitada.isEmpty ()){
-    Serial.print(listaDigitada.pop());
+    else{
+      listaRandom.push(LED_RED);
+      digitalWrite(LED_RED, HIGH);
+      delay(500);
+      digitalWrite(LED_RED, LOW);
+      delay(500); 
+    }  
   }
+
 }
 
-void loop() {
-  while(!sortLed){ 
-  if(digitalRead(BUTTON) == HIGH){
-    Serial.print(contador);
-    for(int i = 0; i < contador; i++){
-      LED = random(2);
-      if(LED == 0){
-        listaRandom.push(LED_GREEN);
-        digitalWrite(LED_GREEN, HIGH);
-        delay(500);
-        digitalWrite(LED_GREEN, LOW);
-        delay(500);
-      }
-      else{
-        listaRandom.push(LED_RED);
-        digitalWrite(LED_RED, HIGH);
-        delay(500);
-        digitalWrite(LED_RED, LOW);
-        delay(500); 
-      }
-    }
-    sortLed = true;
-  }
-  }
-    for(int i = 0; i < contador; i++){
-      while(!digitarLed){
-        Serial.print("Digitar Led");
-        if(digitalRead(BUTTON_RED) == HIGH){
+void digitarSequencia(int fase){
+  for(int i = 0; i < fase; i++){
+    while(!digitarLed){
+       if(digitalRead(BUTTON_RED) == HIGH){
           listaDigitada.push(LED_RED);
           digitalWrite(LED_RED_USER, HIGH);
           delay(500);
@@ -80,14 +65,45 @@ void loop() {
           digitalWrite(LED_GREEN_USER, LOW);
           digitarLed = true;
         }
-      }
-      sortLed = false;
-      digitarLed = false;
     }
-    contador++;  
-    removerElementosRandom();
-    removerElementosDigitada();
- 
+    digitarLed = false;
+  }   
+}
+
+int comparar(int fase){
+  while(listaRandom.count() != 0){
+    int ledListaRandom, ledListaDigitada;
+    ledListaRandom = listaRandom.pop();
+    ledListaDigitada = listaDigitada.pop();
+
+    if(ledListaRandom != ledListaDigitada){
+      //mostra led de game over
+      return 1;
+    }      
+  }
+  if (fase == 10){
+    //Mostrar led de ganhar o jogo
+    //Não apagar o led enquanto não clicar no botao principal
+    return 1;  
+  }
+  else{
+    //mostrar LED de proxima fase
+    fase++;
+    return fase; 
+  }
+
+}
+
+void loop() {
+  while(!mostrarLed){ 
+    if(digitalRead(BUTTON) == HIGH){
+      mostrarSequencia(fase_jogo);
+      mostrarLed = true;
+    }
+  }
+  digitarSequencia(fase_jogo);
+  fase_jogo = comparar(fase_jogo);
+  mostrarLed = false;
   
   
 } 
