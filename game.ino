@@ -1,6 +1,8 @@
 #include <QueueList.h>
 
-
+const int rgbVermelho = 9;
+const int rgbVerde = 8;
+const int rgbAzul = 6;
 int LED_RED = 12;
 int LED_RED_USER = 3;
 int LED_GREEN = 11;
@@ -17,6 +19,9 @@ QueueList <int> listaDigitada;
 
 void setup() {
  Serial.begin(9600);
+ pinMode(rgbVermelho, OUTPUT);
+ pinMode(rgbVerde, OUTPUT);
+ pinMode(rgbAzul, OUTPUT);
  pinMode(LED_RED, OUTPUT);
  pinMode(LED_RED_USER, OUTPUT);
  pinMode(LED_GREEN_USER, OUTPUT);
@@ -77,21 +82,41 @@ int comparar(int fase){
     ledListaDigitada = listaDigitada.pop();
 
     if(ledListaRandom != ledListaDigitada){
-      //mostra led de game over
+      piscarLed(255,0,0);
+      delay(5000);
+      apagarLed();
+      while(listaRandom.count() != 0)
+        listaRandom.pop();
+      while(listaDigitada.count() != 0)
+        listaDigitada.pop();  
       return 1;
     }      
   }
   if (fase == 10){
-    //Mostrar led de ganhar o jogo
-    //Não apagar o led enquanto não clicar no botao principal
+    piscarLed(255,255,0);
+    delay(5000);
+    apagarLed();
     return 1;  
   }
   else{
-    //mostrar LED de proxima fase
     fase++;
+    piscarLed(0,255,0);
+    delay(500);
+    apagarLed();
     return fase; 
   }
 
+}
+void piscarLed(int r, int g, int b){
+  digitalWrite(rgbVermelho, r);
+  digitalWrite(rgbVerde, g);
+  digitalWrite(rgbAzul, b);
+}
+
+void apagarLed(){
+  digitalWrite(rgbVermelho, LOW);
+  digitalWrite(rgbVerde, LOW);
+  digitalWrite(rgbAzul, LOW);
 }
 
 void loop() {
